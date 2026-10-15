@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="theme-color" content="#002346">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700&display=swap">
 <style>
   html, body { margin: 0; padding: 0; background: #F5F8FB; }
   @media print { html, body { background: #FFFFFF; } }
@@ -36,11 +36,11 @@
 }
 #programs-list *, #programs-list *::before, #programs-list *::after { box-sizing: border-box; }
 #programs-list [hidden] { display: none !important; }
-#programs-list h2 { font-size: 40px; line-height: 1.1; margin: 0; font-weight: 500; letter-spacing: -0.02em; text-wrap: balance; }
+#programs-list h2 { font-size: 40px; line-height: 1.1; margin: 0; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
 #programs-list h3 { font-size: 20px; line-height: 1.25; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 #programs-list .pl-brand { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
 #programs-list .pl-brand-r { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-#programs-list .pl-nav { display: inline-flex; align-items: center; height: 44px; padding: 0 22px; border-radius: 100px; background: var(--pl-bg); color: var(--pl-text); box-shadow: inset 0 0 0 1px var(--pl-line); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: box-shadow .15s, color .15s; }
+#programs-list .pl-nav { display: inline-flex; align-items: center; height: 44px; padding: 0 22px; border-radius: 100px; background: var(--pl-bg); color: var(--pl-text); box-shadow: inset 0 0 0 1px var(--pl-line); font-size: 15px; font-weight: 400; text-decoration: none; white-space: nowrap; transition: box-shadow .15s, color .15s; }
 #programs-list .pl-nav:hover { box-shadow: inset 0 0 0 1px var(--pl-red); color: var(--pl-red); }
 #programs-list .pl-logo { display: block; line-height: 0; margin-left: 10px; }
 #programs-list .ipc-logo-svg { display: block; height: 52px; width: auto; }
@@ -50,21 +50,21 @@
 #programs-list .pl-count { color: var(--pl-faint); font-size: 14px; }
 #programs-list .pl-filter { margin-bottom: 14px; }
 #programs-list .pl-typebar { padding-top: 18px; padding-bottom: 18px; }
-#programs-list .pl-label { display: block; font-weight: 500; font-size: 13px; margin-bottom: 6px; color: var(--pl-muted); }
+#programs-list .pl-label { display: block; font-weight: 400; font-size: 13px; margin-bottom: 6px; color: var(--pl-muted); }
 #programs-list .pl-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 #programs-list .pl-pills button {
   font: inherit; font-size: 14px; border: 1px solid var(--pl-line); background: var(--pl-bg); color: var(--pl-text);
   padding: 0 16px; height: 40px; border-radius: 100px; cursor: pointer; white-space: nowrap; transition: border-color .15s, background .15s;
 }
 #programs-list .pl-pills button:hover { border-color: var(--pl-faint); }
-#programs-list .pl-pills button[aria-pressed="true"] { background: var(--pl-text); border-color: var(--pl-text); color: #FFFFFF; font-weight: 600; }
+#programs-list .pl-pills button[aria-pressed="true"] { background: var(--pl-text); border-color: var(--pl-text); color: #FFFFFF; font-weight: 400; }
 #programs-list button:focus-visible, #programs-list a:focus-visible { outline: 2px solid var(--pl-red); outline-offset: 2px; }
 #programs-list .pl-scroll { overflow-x: auto; }
 #programs-list table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-#programs-list th { color: var(--pl-faint); font-weight: 500; font-size: 12px; text-align: right; padding: 0 8px 10px; border-bottom: 1px solid var(--pl-line); vertical-align: bottom; }
+#programs-list th { color: var(--pl-faint); font-weight: 400; font-size: 12px; text-align: right; padding: 0 8px 10px; border-bottom: 1px solid var(--pl-line); vertical-align: bottom; }
 #programs-list td { padding: 9px 8px; border-bottom: 1px solid var(--pl-line); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; vertical-align: top; }
 #programs-list th:first-child, #programs-list td:first-child { text-align: left; padding-left: 0; }
-#programs-list td:first-child { white-space: normal; min-width: 220px; font-weight: 500; }
+#programs-list td:first-child { white-space: normal; min-width: 220px; font-weight: 400; }
 #programs-list th:last-child, #programs-list td:last-child { padding-right: 0; }
 #programs-list tbody tr:last-child td { border-bottom: 0; }
 #programs-list tbody tr:hover td { background: var(--pl-page); }
@@ -84,7 +84,7 @@
   #programs-list tbody tr:hover td { background: transparent; }
   #programs-list td { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; white-space: normal; }
   #programs-list td::before { content: attr(data-l); color: var(--pl-muted); text-align: left; }
-  #programs-list td:first-child { display: block; font-weight: 600; font-size: 15px; min-width: 0; }
+  #programs-list td:first-child { display: block; font-weight: 400; font-size: 15px; min-width: 0; }
   #programs-list td:first-child::before { content: none; }
   #programs-list tbody tr td:last-child { border-bottom: 0; }
 }
