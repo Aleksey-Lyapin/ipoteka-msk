@@ -182,7 +182,9 @@
     Object.keys(withType).forEach(function (t) { if (types.indexOf(t) < 0) types.push(t); });
     var projects = [];
     list.forEach(function (p) { p.projects.forEach(function (x) { if (projects.indexOf(x) < 0) projects.push(x); }); });
-    list.sort(function (a, b) { return collator.compare(a.name, b.name) || kidsIdx(a.kids) - kidsIdx(b.kids) || (a.r1 || 0) - (b.r1 || 0) || a.n - b.n; });
+    // По возрастанию ставки на льготный период; при равной ставке — по названию, количеству детей, основной ставке
+    var rate = function (v) { return v == null ? Infinity : v; };
+    list.sort(function (a, b) { return rate(a.r1) - rate(b.r1) || collator.compare(a.name, b.name) || kidsIdx(a.kids) - kidsIdx(b.kids) || rate(a.r2) - rate(b.r2) || a.n - b.n; });
     return { list: list, types: types, projects: projects };
   }
 
