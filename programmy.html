@@ -49,6 +49,7 @@
 #programs-list .pl-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 14px; }
 #programs-list .pl-count { color: var(--pl-faint); font-size: 14px; }
 #programs-list .pl-filter { margin-bottom: 14px; }
+#programs-list .pl-typebar { padding-top: 18px; padding-bottom: 18px; }
 #programs-list .pl-label { display: block; font-weight: 500; font-size: 13px; margin-bottom: 6px; color: var(--pl-muted); }
 #programs-list .pl-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 #programs-list .pl-pills button {
@@ -98,7 +99,7 @@
 @page { size: A4 landscape; margin: 8mm; }
 @media print {
   #programs-list { background: #FFFFFF; padding: 0; max-width: none; font-size: 11px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  #programs-list .pl-nav, #programs-list .pl-sub, #programs-list .pl-filter { display: none !important; }
+  #programs-list .pl-nav, #programs-list .pl-sub, #programs-list .pl-filter, #programs-list .pl-typebar { display: none !important; }
   #programs-list h2 { font-size: 24px; }
   #programs-list .pl-card { border: 1px solid var(--pl-line); padding: 12px 14px; }
   #programs-list table { font-size: 10.5px; }
@@ -119,6 +120,10 @@
     </div>
   </div>
   <p class="pl-sub" id="pl-sub">ЖК «Бестселлер», Москва. Перечень ипотечных программ по типам ипотеки.</p>
+  <div class="pl-card pl-typebar">
+    <span class="pl-label" id="pl-type-l">Тип ипотеки</span>
+    <div class="pl-pills" id="pl-type" role="group" aria-labelledby="pl-type-l"></div>
+  </div>
   <div id="pl-groups"></div>
   <p class="pl-foot">Условия ориентировочные: итоговые ставку, срок и сумму кредита определяет банк.</p>
 </div>
@@ -204,8 +209,8 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   /* ---------- Вывод ---------- */
-  var D = null, kidsFilter = '';
-  var groupsEl = document.getElementById('pl-groups');
+  var D = null, kidsFilter = '', typeFilter = ''; // '' — все
+  var groupsEl = document.getElementById('pl-groups'), typeEl = document.getElementById('pl-type');
 
   function cols(type, multiProject) {
     var c = [
@@ -227,7 +232,13 @@
     var multi = D.projects.length > 1;
     if (!multi && D.projects.length) document.getElementById('pl-sub').textContent =
       'ЖК «' + D.projects[0] + '», Москва. Перечень ипотечных программ по типам ипотеки.';
-    groupsEl.innerHTML = D.types.map(function (type) {
+    // Фильтр «Тип ипотеки»: Все + типы, по которым на листе есть программы
+    if (typeFilter && D.types.indexOf(typeFilter) < 0) typeFilter = '';
+    typeEl.innerHTML = [''].concat(D.types).map(function (t) {
+      return '<button type="button" data-t="' + esc(t) + '" aria-pressed="' + (t === typeFilter) + '">' + (t ? esc(t) : 'Все') + '</button>';
+    }).join('');
+    var shownTypes = typeFilter ? [typeFilter] : D.types;
+    groupsEl.innerHTML = shownTypes.map(function (type) {
       var all = D.list.filter(function (p) { return p.type === type; });
       var fam = type === FAMILY;
       var kidsList = [];
@@ -256,6 +267,10 @@
   groupsEl.addEventListener('click', function (e) {
     var b = e.target.closest('[data-kids] button[data-k]'); if (!b) return;
     kidsFilter = b.getAttribute('data-k'); render();
+  });
+  typeEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-t]'); if (!b) return;
+    typeFilter = b.getAttribute('data-t'); render();
   });
 
   window.ProgramsList = { data: function () { return D; } };
