@@ -129,6 +129,14 @@
 #ipoteka-calc .ipc-tablewrap { margin-top: 16px; background: var(--ipc-bg); border-radius: var(--ipc-radius); padding: 24px; }
 #ipoteka-calc .ipc-tablehead { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 14px; }
 #ipoteka-calc .ipc-tablehead h3 { margin: 0; }
+/* Фильтры таблицы программ */
+#ipoteka-calc .ipc-filters { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px; align-items: end; margin-bottom: 16px; }
+#ipoteka-calc .ipc-filters label, #ipoteka-calc .ipc-flabel { display: block; font-weight: 500; font-size: 12px; margin-bottom: 4px; color: var(--ipc-muted); }
+#ipoteka-calc .ipc-filters input, #ipoteka-calc .ipc-filters select { height: 40px; font-size: 14px; padding: 0 12px; border-radius: 10px; }
+#ipoteka-calc .ipc-filters select { padding-right: 34px; background-position: right 12px center; }
+#ipoteka-calc .ipc-range { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#ipoteka-calc .ipc-f-reset { grid-column: 1 / -1; justify-self: start; }
+#ipoteka-calc tr.ipc-empty-row td { text-align: center !important; color: var(--ipc-muted); cursor: default; }
 #ipoteka-calc .ipc-link { font: inherit; font-size: 13px; color: var(--ipc-red); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: none; border-bottom: 1px solid var(--ipc-red-soft); }
 #ipoteka-calc .ipc-link:hover { color: var(--ipc-red-hover); }
 #ipoteka-calc .ipc-scroll { overflow-x: auto; }
@@ -139,6 +147,7 @@
 #ipoteka-calc th:nth-child(2), #ipoteka-calc td:nth-child(2) { text-align: left; }
 #ipoteka-calc td:first-child { color: var(--ipc-faint); }
 #ipoteka-calc td:nth-child(2) { white-space: normal; min-width: 180px; font-weight: 400; }
+#ipoteka-calc th:nth-child(3), #ipoteka-calc td:nth-child(3) { text-align: left; }
 #ipoteka-calc th:first-child, #ipoteka-calc td:first-child { padding-left: 4px; }
 #ipoteka-calc th:last-child, #ipoteka-calc td:last-child { padding-right: 0; }
 #ipoteka-calc tbody tr { cursor: pointer; transition: background .15s; }
@@ -203,6 +212,7 @@
 .ipc-report th:first-child, .ipc-report td:first-child, .ipc-report th:nth-child(2), .ipc-report td:nth-child(2) { text-align: left; }
 .ipc-report td:first-child { color: #6C8DAF; }
 .ipc-report td:nth-child(2) { white-space: normal; font-weight: 400; }
+.ipc-report th:nth-child(3), .ipc-report td:nth-child(3) { text-align: left; }
 .ipc-report tr.ipc-sel td { background: #EDF6FF; }
 .ipc-report tr.ipc-sel td:first-child { box-shadow: inset 3px 0 0 #E20617; }
 .ipc-report tr.ipc-na td { color: #6C8DAF; }
@@ -215,6 +225,7 @@
 @media (prefers-reduced-motion: reduce) { #ipoteka-calc * { transition: none !important; } }
 @media (max-width: 860px) {
   #ipoteka-calc .ipc-grid { grid-template-columns: minmax(0, 1fr); }
+  #ipoteka-calc .ipc-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   #ipoteka-calc { padding: 16px; }
@@ -242,6 +253,8 @@
   #ipoteka-calc tr.ipc-more-row { background: transparent; padding: 0; }
   #ipoteka-calc tr.ipc-more-row td { display: block !important; text-align: center; border: 0; }
   #ipoteka-calc tr.ipc-more-row td::before { content: none; }
+  #ipoteka-calc tr.ipc-empty-row td { display: block !important; text-align: center; border: 0; }
+  #ipoteka-calc tr.ipc-empty-row td::before { content: none; }
 }
 /* Печать: A4 альбомный. Лист 1 — исходные данные и расчёт выбранной программы, лист 2 — все программы */
 /* узкий телефон: заголовок и логотип в первой строке, кнопка «Калькулятор рассрочки» — под ними */
@@ -256,7 +269,7 @@
 @media print {
   #ipoteka-calc { background: #FFFFFF; padding: 0; max-width: none; font-size: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   #ipoteka-calc .ipc-actions, #ipoteka-calc .ipc-link, #ipoteka-calc details, #ipoteka-calc .ipc-sub, #ipoteka-calc .ipc-nav,
-  #ipoteka-calc .ipc-hint, #ipoteka-calc #ipc-pickinfo, #ipoteka-calc .ipc-foot { display: none !important; }
+  #ipoteka-calc .ipc-hint, #ipoteka-calc #ipc-pickinfo, #ipoteka-calc .ipc-foot, #ipoteka-calc .ipc-filters { display: none !important; }
   #ipoteka-calc .ipc-brand { margin-bottom: 10px; }
   #ipoteka-calc h2 { font-size: 26px; }
   #ipoteka-calc h3 { font-size: 15px; margin-bottom: 8px; }
@@ -368,6 +381,35 @@
       <h3 id="ipc-table-title">Все программы проекта</h3>
       <span class="ipc-static" id="ipc-pickinfo"></span>
     </div>
+    <div class="ipc-filters" id="ipc-filters">
+      <div class="ipc-ff">
+        <label for="ipc-f-bank">Банк</label>
+        <select id="ipc-f-bank"></select>
+      </div>
+      <div class="ipc-ff">
+        <label for="ipc-f-rate">Ставка до, %</label>
+        <input id="ipc-f-rate" type="text" inputmode="decimal" autocomplete="off" placeholder="любая">
+      </div>
+      <div class="ipc-ff">
+        <span class="ipc-flabel" id="ipc-f-price-l">Итоговая цена, ₽</span>
+        <div class="ipc-range" role="group" aria-labelledby="ipc-f-price-l">
+          <input id="ipc-f-price-from" type="text" inputmode="numeric" autocomplete="off" placeholder="от" aria-label="Итоговая цена от">
+          <input id="ipc-f-price-to" type="text" inputmode="numeric" autocomplete="off" placeholder="до" aria-label="Итоговая цена до">
+        </div>
+      </div>
+      <div class="ipc-ff">
+        <label for="ipc-f-pv">ПВ до, ₽</label>
+        <input id="ipc-f-pv" type="text" inputmode="numeric" autocomplete="off" placeholder="любой">
+      </div>
+      <div class="ipc-ff">
+        <span class="ipc-flabel" id="ipc-f-pay-l">Платёж, ₽</span>
+        <div class="ipc-range" role="group" aria-labelledby="ipc-f-pay-l">
+          <input id="ipc-f-pay-from" type="text" inputmode="numeric" autocomplete="off" placeholder="от" aria-label="Платёж от">
+          <input id="ipc-f-pay-to" type="text" inputmode="numeric" autocomplete="off" placeholder="до" aria-label="Платёж до">
+        </div>
+      </div>
+      <button type="button" class="ipc-link ipc-f-reset" id="ipc-f-reset" hidden>Сбросить фильтры</button>
+    </div>
     <div class="ipc-scroll">
       <table>
         <thead id="ipc-thead"></thead>
@@ -456,6 +498,10 @@
   }
   var collator = typeof Intl !== 'undefined' && Intl.Collator ? new Intl.Collator('ru', { sensitivity: 'base', numeric: true }) : null;
   // По названию; одинаковые названия — сначала с меньшим ежемесячным платежом
+  function bankOf(name) {
+    var m = /\s*\(([^()]+)\)\s*$/.exec(name);
+    return m ? { bank: m[1].trim(), prog: name.slice(0, m.index).trim() } : { bank: '', prog: name };
+  }
   function byName(a, b) { return (collator ? collator.compare(a.name, b.name) : (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) || (a.p1 || 0) - (b.p1 || 0) || a.n - b.n; }
 
   /* Лист «Программы», колонки A–O:
@@ -680,7 +726,9 @@
         : (inp.term != null && inp.term < term) ? 'Срок увеличен до минимального' : '';
       if (noDisc && progDisc > 0 && status === OK) note = 'Скидка на квартиру по этой программе не действует' + (note ? '. ' + note : '');
       return {
-        n: i + 1, name: fam ? p.name + ' — ' + inp.kids : p.name, combo: !!p.combo, famPart: famPart, basePart: basePart,
+        n: i + 1, name: fam ? p.name + ' — ' + inp.kids : p.name,
+        // банк — в скобках в конце названия: «Семейная ипотека (Абсолют)» → банк «Абсолют», программа «Семейная ипотека»
+        bank: bankOf(p.name).bank, prog: bankOf(p.name).prog + (fam ? ' — ' + inp.kids : ''), combo: !!p.combo, famPart: famPart, basePart: basePart,
         tranche: !!p.tranche, t1: t1, t2: t2, m1: m1, date2: p.date2, r1: r1, r2: r2, gm: gm, term: term, mpv: mpv, lim: lim, maxPv: p.maxPv,
         sub: sub, subp: subp, status: status, price: price, disc: disc, mpvr: mpvr, pv: pv, loan: loan, subr: subr,
         p1: p1, p2: p2, bal: bal, tot: tot, over: over, note: note, pvUp: pvIn > 0 && pv > pvIn + 0.5
@@ -763,7 +811,10 @@
     project: $('ipc-project'), flat: $('ipc-flat'), price: $('ipc-price'), finish: $('ipc-finish'), disc: $('ipc-disc'),
     type: $('ipc-type'), kids: $('ipc-kids'), pv: $('ipc-pv'), term: $('ipc-term'),
     alert: $('ipc-alert'), detail: $('ipc-detail'), thead: $('ipc-thead'), tbody: $('ipc-tbody'), title: $('ipc-table-title'),
-    pickinfo: $('ipc-pickinfo'), notes: $('ipc-notes'), save: $('ipc-save'), savemsg: $('ipc-savemsg')
+    pickinfo: $('ipc-pickinfo'), notes: $('ipc-notes'), save: $('ipc-save'), savemsg: $('ipc-savemsg'),
+    // фильтры таблицы программ
+    fBank: $('ipc-f-bank'), fRate: $('ipc-f-rate'), fPriceFrom: $('ipc-f-price-from'), fPriceTo: $('ipc-f-price-to'),
+    fPv: $('ipc-f-pv'), fPayFrom: $('ipc-f-pay-from'), fPayTo: $('ipc-f-pay-to'), fReset: $('ipc-f-reset')
   };
   if (!CONFIG.showLogo) $('ipc-logo').hidden = true;
   if (CONFIG.installmentUrl) $('ipc-nav').href = CONFIG.installmentUrl; else $('ipc-nav').hidden = true;
@@ -874,7 +925,8 @@
   function renderTable(res) {
     var cols = [
       ['№', function (r) { return r.pos; }],
-      ['Программа', function (r) { return esc(r.name); }],
+      ['Программа', function (r) { return esc(r.prog); }],
+      ['Банк', function (r) { return esc(r.bank || '—'); }],
       ['Ставка', function (r) { return pct(r.r1) + (r.combo ? '<span class="ipc-s2">средневзвеш.</span>' : '') + (r.gm ? '<span class="ipc-s2">далее ' + pct(r.r2) + '</span>' : ''); }],
       ['Льготный период', function (r) { return period(r.gm); }],
       ['Срок', function (r) { return years(r.term); }],
@@ -909,6 +961,33 @@
     if (CONFIG.showAllTypes.indexOf(state.type) >= 0) res.rows.forEach(function (r) { if (r.status === OK && !r.excluded) keep[r.n] = true; });
     var main = res.rows.filter(function (r) { return r.status === OK && !r.excluded && (keep[r.n] || r.n === res.sel); }).sort(byName);
     var extra = res.rows.filter(function (r) { return r.status === OK && !r.excluded && !keep[r.n] && r.n !== res.sel; }).sort(byName);
+    // Фильтры над таблицей: банк, ставка до, итоговая цена от–до, ПВ до, платёж от–до (по жирному платежу в таблице)
+    var ok = res.rows.filter(function (r) { return r.status === OK && !r.excluded; });
+    var banks = [];
+    ok.forEach(function (r) { if (r.bank && banks.indexOf(r.bank) < 0) banks.push(r.bank); });
+    banks.sort(function (a, b) { return collator ? collator.compare(a, b) : (a < b ? -1 : 1); });
+    var fb = el.fBank.value;
+    if (fb && banks.indexOf(fb) < 0) fb = '';
+    el.fBank.innerHTML = '<option value="">Все банки</option>' + banks.map(function (b) {
+      return '<option value="' + esc(b) + '"' + (b === fb ? ' selected' : '') + '>' + esc(b) + '</option>';
+    }).join('');
+    el.fBank.value = fb;
+    var fRate = parseFloat(String(el.fRate.value).replace(',', '.'));
+    var F = {
+      bank: fb, rate: isFinite(fRate) ? fRate / 100 : null,
+      priceFrom: parseMoney(el.fPriceFrom.value), priceTo: parseMoney(el.fPriceTo.value), pvTo: parseMoney(el.fPv.value),
+      payFrom: parseMoney(el.fPayFrom.value), payTo: parseMoney(el.fPayTo.value)
+    };
+    var active = !!(F.bank || F.rate != null || F.priceFrom != null || F.priceTo != null || F.pvTo != null || F.payFrom != null || F.payTo != null);
+    el.fReset.hidden = !active;
+    var pass = function (r) {
+      return (!F.bank || r.bank === F.bank) &&
+        (F.rate == null || r.r1 <= F.rate + 1e-9) &&
+        (F.priceFrom == null || r.price >= F.priceFrom) && (F.priceTo == null || r.price <= F.priceTo) &&
+        (F.pvTo == null || r.pv <= F.pvTo + 0.5) &&
+        (F.payFrom == null || r.p1 >= F.payFrom - 0.5) && (F.payTo == null || r.p1 <= F.payTo + 0.5);
+    };
+    main = main.filter(pass); extra = extra.filter(pass);
     // Развёрнутый список — единый, по алфавиту; ссылка «Скрыть» — в конце
     var shown = state.showAll ? main.concat(extra).sort(byName) : main;
     // № — порядковый номер строки в списке (номер строки листа остаётся внутренним, в data-n)
@@ -919,7 +998,8 @@
     };
     var more = extra.length ? '<tr class="ipc-more-row"><td colspan="' + cols.length + '"><button type="button" class="ipc-link" id="ipc-more">' +
       (state.showAll ? 'Скрыть программы с бо́льшим ПВ' : 'Показать все программы (ещё ' + extra.length + ')') + '</button></td></tr>' : '';
-    el.tbody.innerHTML = shown.map(rowHtml).join('') + more;
+    var empty = !shown.length && active ? '<tr class="ipc-empty-row"><td colspan="' + cols.length + '">Нет программ по выбранным фильтрам</td></tr>' : '';
+    el.tbody.innerHTML = shown.map(rowHtml).join('') + empty + more;
     // В PDF — то же, что видно на экране
     state.pdfRows = shown.map(rowHtml);
   }
@@ -1099,7 +1179,18 @@
   }
 
   function bind() {
-    [el.price, el.finish, el.pv].forEach(moneyInput);
+    [el.price, el.finish, el.pv, el.fPriceFrom, el.fPriceTo, el.fPv, el.fPayFrom, el.fPayTo].forEach(moneyInput);
+    el.fRate.addEventListener('input', function () {
+      var v = cleanDisc(el.fRate.value);
+      if (v !== el.fRate.value) el.fRate.value = v;
+      render();
+    });
+    el.fBank.addEventListener('change', render);
+    el.fReset.addEventListener('click', function () {
+      [el.fRate, el.fPriceFrom, el.fPriceTo, el.fPv, el.fPayFrom, el.fPayTo].forEach(function (x) { x.value = ''; });
+      el.fBank.value = '';
+      render();
+    });
     el.disc.addEventListener('input', function () {
       var v = cleanDisc(el.disc.value);
       if (v !== el.disc.value) el.disc.value = v;
