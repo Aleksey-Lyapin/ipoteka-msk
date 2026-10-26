@@ -304,8 +304,7 @@
     ] : isTranche(type) ? [
       // Траншевая: транши и скидка программы, без льготного периода (как в калькуляторе)
       ['Программа', function (p) { return esc(p.name); }],
-      ['Ставка на льготный период', function (p) { return pct(p.r1); }],
-      ['Ставка на основной период', function (p) { return pct(p.r2); }],
+      ['Ставка', function (p) { return pct(p.r1); }],
       ['Первый транш', function (p) { return pct(p.t1Share) + (p.t1Min != null ? ', не более ' + rub(p.t1Min) : '') + '<span class="pl-s2">при заключении ДДУ</span>'; }],
       ['Второй транш', function (p) { return pct(p.t2Share) + (p.date2 ? '<span class="pl-s2">до ' + esc(p.date2) + '</span>' : ''); }],
       ['Скидка', function (p) { return pct(p.disc); }],
