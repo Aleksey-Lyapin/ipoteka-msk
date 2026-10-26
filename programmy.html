@@ -68,6 +68,7 @@
 #programs-list th:last-child, #programs-list td:last-child { padding-right: 0; }
 #programs-list tbody tr:last-child td { border-bottom: 0; }
 #programs-list tbody tr:hover td { background: var(--pl-page); }
+#programs-list .pl-s2 { display: block; color: var(--pl-faint); font-size: 12px; font-weight: 400; margin-top: 2px; }
 #programs-list .pl-empty { color: var(--pl-muted); font-size: 14px; }
 #programs-list .pl-foot { margin-top: 4px; font-size: 12px; color: var(--pl-faint); }
 
@@ -84,6 +85,7 @@
   #programs-list tbody tr:hover td { background: transparent; }
   #programs-list td { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; white-space: normal; }
   #programs-list td::before { content: attr(data-l); color: var(--pl-muted); text-align: left; }
+  #programs-list td .pl-v { text-align: right; }
   #programs-list td:first-child { display: block; font-weight: 400; font-size: 15px; min-width: 0; }
   #programs-list td:first-child::before { content: none; }
   #programs-list tbody tr td:last-child { border-bottom: 0; }
@@ -137,6 +139,8 @@
     programsSheet: 'Программы_Мск',
     // Лист комбо-ипотеки (колонки A–P)
     comboSheet: 'Комбо_Мск',
+    // Лист траншевой ипотеки (колонки A–U)
+    trancheSheet: 'Траншевая_Мск',
     liveData: true,
     // Скидки для колонок «Мин. ПВ (скидка …)»
     pvDiscounts: [0.06, 0.10],
@@ -209,6 +213,27 @@
       comboType[p.type] = true;
       list.push(p);
     });
+    /* Лист «Траншевая_Мск», A–U: D ставка льготная · E ставка основная · F первый транш, % · G второй транш, % · H скидка ·
+       K макс. срок · L мин. ПВ · M макс. ПВ · N мин. кредит · O лимит · P субсидия · R дети · S даты траншей (текст).
+       Первый транш — при заключении ДДУ; «мин. траншем N тыс.» в названии — не более N тыс. ₽ (как в калькуляторе). */
+    var trancheType = {};
+    (raw.tranche || []).filter(function (r) { return r && r[1] && r[2]; }).forEach(function (r, i) {
+      var kids = r[17] == null ? '' : String(r[17]).trim();
+      var name = fixHomoglyphs(String(r[2]).trim().replace(/\s{2,}/g, ' '));
+      var dates = String(r[18] || '').match(/\d{1,2}\.\d{1,2}\.\d{4}/g);
+      var minFirst = /мин\.?\s*транш\D{0,10}(\d[\d\s]*)\s*тыс/i.exec(name);
+      var r1 = numx(r[3]), r2 = numx(r[4]);
+      var p = {
+        n: 20000 + i, tranche: true, projects: String(r[0] || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+        type: String(r[1]).trim(), name: name, r1: r1, r2: r2 == null ? r1 : r2, grace: numx(r[8]) || 0,
+        t1Share: numx(r[5]), t1Min: minFirst ? parseInt(minFirst[1].replace(/\s/g, ''), 10) * 1000 : null,
+        t2Share: numx(r[6]), date2: dates ? dates[dates.length - 1] : null, disc: numx(r[7]) || 0,
+        term: numx(r[10]), mpv: numx(r[11]), maxPv: numx(r[12]), minLoan: numx(r[13]), lim: numx(r[14]), sub: numx(r[15]) || 0,
+        kids: /^[-–—]?$/.test(kids) ? null : kids
+      };
+      trancheType[p.type] = true;
+      list.push(p);
+    });
     var withType = {};
     list.forEach(function (p) { withType[p.type] = true; });
     var types = (raw.types || []).map(function (t) { return String(t).trim(); }).filter(function (t) { return withType[t]; });
@@ -218,7 +243,7 @@
     // По возрастанию ставки на льготный период; при равной ставке — по названию, количеству детей, основной ставке
     var rate = function (v) { return v == null ? Infinity : v; };
     list.sort(function (a, b) { return rate(a.r1) - rate(b.r1) || collator.compare(a.name, b.name) || kidsIdx(a.kids) - kidsIdx(b.kids) || rate(a.r2) - rate(b.r2) || a.n - b.n; });
-    return { list: list, types: types, projects: projects, comboType: comboType };
+    return { list: list, types: types, projects: projects, comboType: comboType, trancheType: trancheType };
   }
 
   function gviz(sheet, range, signal) {
@@ -262,7 +287,8 @@
   var D = null, kidsFilter = {}, typeFilter = '';
   var groupsEl = document.getElementById('pl-groups'), typeEl = document.getElementById('pl-type');
   function isCombo(type) { return !!(D && D.comboType[type]); }
-  function needKids(type) { return type === FAMILY || isCombo(type); }
+  function isTranche(type) { return !!(D && D.trancheType[type]); }
+  function needKids(type) { return type === FAMILY || isCombo(type) || (isTranche(type) && D.list.some(function (p) { return p.type === type && p.kids; })); }
   function rateRange(p) {
     if (p.rateMin == null) return '—';
     if (p.rateMax == null || Math.abs(p.rateMax - p.rateMin) < 5e-5) return pct(Math.round(p.rateMin * 1e4) / 1e4);
@@ -274,6 +300,15 @@
       // Комбо: одна средневзвешенная ставка, без ставок частей и без льготного периода
       ['Программа', function (p) { return esc(p.name); }],
       ['Средневзвешенная ставка', function (p) { return rateRange(p); }],
+      ['Макс. срок', function (p) { return years(p.term); }]
+    ] : isTranche(type) ? [
+      // Траншевая: транши и скидка программы, без льготного периода (как в калькуляторе)
+      ['Программа', function (p) { return esc(p.name); }],
+      ['Ставка на льготный период', function (p) { return pct(p.r1); }],
+      ['Ставка на основной период', function (p) { return pct(p.r2); }],
+      ['Первый транш', function (p) { return pct(p.t1Share) + (p.t1Min != null ? ', не более ' + rub(p.t1Min) : '') + '<span class="pl-s2">при заключении ДДУ</span>'; }],
+      ['Второй транш', function (p) { return pct(p.t2Share) + (p.date2 ? '<span class="pl-s2">до ' + esc(p.date2) + '</span>' : ''); }],
+      ['Скидка', function (p) { return pct(p.disc); }],
       ['Макс. срок', function (p) { return years(p.term); }]
     ] : [
       ['Программа', function (p) { return esc(p.name); }],
@@ -323,7 +358,7 @@
         '<div class="pl-head"><h3>' + esc(type) + '</h3><span class="pl-count">' + rows.length + ' ' + plural(rows.length, 'программа', 'программы', 'программ') + '</span></div>' +
         filter +
         (rows.length ? '<div class="pl-scroll"><table><thead><tr>' + c.map(function (x) { return '<th>' + x[0] + '</th>'; }).join('') + '</tr></thead><tbody>' +
-          rows.map(function (p) { return '<tr>' + c.map(function (x) { return '<td data-l="' + x[0] + '">' + x[1](p) + '</td>'; }).join('') + '</tr>'; }).join('') +
+          rows.map(function (p) { return '<tr>' + c.map(function (x) { return '<td data-l="' + x[0] + '"><span class="pl-v">' + x[1](p) + '</span></td>'; }).join('') + '</tr>'; }).join('') +
           '</tbody></table></div>' : '<p class="pl-empty">Программ нет.</p>') +
         '</section>';
     }).join('');
@@ -348,10 +383,11 @@
     Promise.all([
       gviz(CONFIG.programsSheet, 'A5:O400', s), gviz('Справочники', 'A4:F44', s),
       // лист комбо не обязателен: не загрузился — берём из встроенной копии
-      CONFIG.comboSheet ? gviz(CONFIG.comboSheet, 'A5:P400', s).catch(function () { return null; }) : null
+      CONFIG.comboSheet ? gviz(CONFIG.comboSheet, 'A5:P400', s).catch(function () { return null; }) : null,
+      CONFIG.trancheSheet ? gviz(CONFIG.trancheSheet, 'A5:U400', s).catch(function () { return null; }) : null
     ]).then(function (res) {
       clearTimeout(timer);
-      var d = normalize({ programs: res[0], combo: res[2] || SNAPSHOT.combo, types: res[1].map(function (r) { return r[1]; }).filter(function (v) { return v; }) });
+      var d = normalize({ programs: res[0], combo: res[2] || SNAPSHOT.combo, tranche: res[3] || SNAPSHOT.tranche, types: res[1].map(function (r) { return r[1]; }).filter(function (v) { return v; }) });
       if (d.list.length) { D = d; render(); }
     }).catch(function () { /* остаёмся на встроенной копии */ });
   }
