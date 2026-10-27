@@ -459,8 +459,12 @@
     // true — у программ с субсидией застройщика (> 0%) скидка на квартиру обнуляется: цена = базовая + отделка;
     // программа показывается, только если субсидия в ₽ (кредит × % субсидии) не больше скидки в ₽ (базовая цена × скидка)
     subsidyNoDiscount: true,
-    // Программы без скидки на квартиру (расчёт по базовой цене): часть названия + льготная ставка (null — любая)
-    noDiscountPrograms: [{ name: 'ипотека для всех на срок строительства (Совком)', r1: 0.044 }],
+    // Своя скидка на квартиру у программы, по проектам (вместо введённой скидки): часть названия + льготная ставка (null — любая).
+    // Проекта нет в disc — обычная скидка
+    programDiscounts: [{
+      name: 'ипотека для всех на срок строительства (Совком)', r1: 0.044,
+      disc: { 'Бестселлер': 0.03 }
+    }],
     // Адрес калькулятора рассрочки (кнопка «Рассрочка» в шапке). Пусто — кнопка скрыта
     installmentUrl: 'rassrochka.html',
     // Значения по умолчанию
@@ -642,11 +646,12 @@
     return loan * f - pay * (f - 1) / r;
   }
 
-  // Скидка на квартиру не действует (CONFIG.noDiscountPrograms): совпадает часть названия и льготная ставка
-  function noDiscProg(p) {
-    return (CONFIG.noDiscountPrograms || []).some(function (m) {
+  // Своя скидка программы в проекте (CONFIG.programDiscounts): совпадает часть названия и льготная ставка; нет правила — null
+  function progDiscount(p, project) {
+    var m = (CONFIG.programDiscounts || []).filter(function (m) {
       return p.name.toLowerCase().indexOf(m.name.toLowerCase()) >= 0 && (m.r1 == null || Math.abs(p.r1 - m.r1) < 1e-9);
-    });
+    })[0];
+    return m && m.disc[project] != null ? m.disc[project] : null;
   }
 
   function compute(D, inp) {
@@ -669,10 +674,12 @@
       var mpv = p.mpv;
       var lim = p.lim;
       var sub = p.sub;
-      // Субсидированная программа (CONFIG.subsidyNoDiscount) и программы из CONFIG.noDiscountPrograms — без скидки на квартиру
-      var noDisc = (CONFIG.subsidyNoDiscount && sub > 0) || noDiscProg(p);
+      // Субсидированная программа — без скидки на квартиру (CONFIG.subsidyNoDiscount)
+      var noDisc = CONFIG.subsidyNoDiscount && sub > 0;
+      // Программы из CONFIG.programDiscounts — своя скидка проекта
+      var pdOwn = progDiscount(p, inp.project);
       // Траншевая ипотека: скидка не вводится, берётся из программы (колонка H листа)
-      var progDisc = p.tranche ? p.disc : inp.disc;
+      var progDisc = pdOwn != null ? pdOwn : p.tranche ? p.disc : inp.disc;
       var discIn = noDisc ? 0 : progDisc;
       // шаг 1 — субсидия по базовой цене
       var pv0 = Math.min(Math.max(pvIn, roundup0(BT * mpv), BT - lim), BT);
@@ -734,6 +741,8 @@
         : (inp.term != null && inp.term > term) ? 'Срок снижен до максимального'
         : (inp.term != null && inp.term < term) ? 'Срок увеличен до минимального' : '';
       if (noDisc && progDisc > 0 && status === OK) note = 'Скидка на квартиру по этой программе не действует' + (note ? '. ' + note : '');
+      else if (pdOwn != null && Math.abs(pdOwn - inp.disc) > 1e-9 && status === OK)
+        note = 'Скидка на квартиру по этой программе — ' + pct1(pdOwn) + (note ? '. ' + note : '');
       return {
         n: i + 1, name: fam ? p.name + ' — ' + inp.kids : p.name,
         // банк — в скобках в конце названия: «Семейная ипотека (Абсолют)» → банк «Абсолют», программа «Семейная ипотека»
